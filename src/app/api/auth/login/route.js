@@ -24,7 +24,17 @@ export async function POST(request) {
     }
 
     const token = signToken({ id: user._id.toString(), username: user.username });
-    const res = NextResponse.json({ ok: true, username: user.username });
+    const res = NextResponse.json({ 
+      ok: true, 
+      user: {
+        id: user._id.toString(),
+        username: user.username,
+        email: user.email,
+        inviteCode: user.inviteCode,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl
+      }
+    });
     setTokenCookie(res, token);
     return res;
   } catch (err) {

@@ -32,7 +32,17 @@ export async function POST(request) {
     const user = await User.create({ username, email, passwordHash, inviteCode });
 
     const token = signToken({ id: user._id.toString(), username: user.username });
-    const res = NextResponse.json({ ok: true, username: user.username }, { status: 201 });
+    const res = NextResponse.json({ 
+      ok: true, 
+      user: {
+        id: user._id.toString(),
+        username: user.username,
+        email: user.email,
+        inviteCode: user.inviteCode,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl
+      }
+    }, { status: 201 });
     setTokenCookie(res, token);
     return res;
   } catch (err) {

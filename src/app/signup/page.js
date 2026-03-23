@@ -23,7 +23,7 @@ export default function SignupPage() {
     const data = await res.json();
     setLoading(false);
     if (!res.ok) return setError(data.error || 'Something went wrong.');
-    setUser({ username: data.username });
+    setUser(data.user);
     router.push('/feed');
   }
 
