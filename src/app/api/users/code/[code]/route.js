@@ -62,13 +62,17 @@ export async function POST(request, { params }) {
       $addToSet: { inviteCodeUsedBy: session.id },
     });
 
-    const { default: Notification } = await import('@/models/Notification');
-    Notification.create({
-      toUserId:    target._id,
-      fromUserId:  session.id,
-      fromUsername:session.username,
-      type:        'follow_request',
-    }).catch((e) => console.error('[follow_request notification]', e));
+    try {
+      const { default: Notification } = await import('@/models/Notification');
+      await Notification.create({
+        toUserId:    target._id,
+        fromUserId:  session.id,
+        fromUsername:session.username,
+        type:        'follow_request',
+      });
+    } catch (e) {
+      console.error('[follow_request notification]', e);
+    }
 
     return NextResponse.json({ ok: true, status: 'requested' });
   } catch (err) {

@@ -21,7 +21,7 @@ export default function NavBar() {
         .catch(() => {});
     }
     fetchCount();
-    const id = setInterval(fetchCount, 60000);
+    const id = setInterval(fetchCount, 30000); // 30s
     return () => clearInterval(id);
   }, [user]);
 
@@ -47,9 +47,9 @@ export default function NavBar() {
                 {unread > 0 && (
                   <span style={{
                     position: 'absolute',
-                    top: 6, right: 6,
-                    background: 'var(--text-primary)',
-                    width: 6, height: 6,
+                    top: 6, right: 4,
+                    background: '#ef4444', // Red for better visibility
+                    width: 7, height: 7,
                     borderRadius: '50%',
                     display: 'block',
                     pointerEvents: 'none',
