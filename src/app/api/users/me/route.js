@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import { getSession } from '@/lib/auth';
+import crypto from 'crypto';
 
 export async function GET() {
   try {
@@ -16,10 +17,9 @@ export async function GET() {
 
     // Back-fill invite code for existing users
     if (!user.inviteCode) {
-      const { default: crypto } = await import('crypto');
       const code = crypto.randomBytes(4).toString('hex');
       await User.findByIdAndUpdate(session.id, { inviteCode: code });
-      user = { ...user, inviteCode: code };
+      user.inviteCode = code;
     }
 
     return NextResponse.json({ user });

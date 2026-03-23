@@ -12,6 +12,7 @@ export default function ConnectPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [actionDone, setActionDone] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleLookup = useCallback(async (e) => {
     e.preventDefault();
@@ -147,11 +148,17 @@ export default function ConnectPage() {
             </div>
             <button
               className="btn btn-outline btn-sm"
-              onClick={() => {
-                navigator.clipboard.writeText(user.inviteCode ?? '');
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(user.inviteCode ?? '');
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                  console.error('Failed to copy', err);
+                }
               }}
             >
-              copy
+              {copied ? 'copied!' : 'copy'}
             </button>
           </div>
         </>

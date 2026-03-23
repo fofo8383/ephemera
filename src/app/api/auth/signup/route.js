@@ -27,7 +27,9 @@ export async function POST(request) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await User.create({ username, email, passwordHash });
+    // Explicitly generate invite code during signup
+    const inviteCode = crypto.randomBytes(4).toString('hex');
+    const user = await User.create({ username, email, passwordHash, inviteCode });
 
     const token = signToken({ id: user._id.toString(), username: user.username });
     const res = NextResponse.json({ ok: true, username: user.username }, { status: 201 });
