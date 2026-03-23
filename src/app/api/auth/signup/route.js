@@ -34,7 +34,15 @@ export async function POST(request) {
     setTokenCookie(res, token);
     return res;
   } catch (err) {
-    console.error('[signup]', err);
-    return NextResponse.json({ error: 'Server error.' }, { status: 500 });
+    console.error('[SIGNUP_ERROR]', {
+      name: err.name,
+      message: err.message,
+      stack: err.stack
+    });
+    return NextResponse.json({ 
+      error: 'Server error.', 
+      errorName: err.name, // Helpeful for debugging production
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined 
+    }, { status: 500 });
   }
 }
