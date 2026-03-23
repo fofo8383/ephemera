@@ -48,7 +48,7 @@ export default function NavBar() {
                   <span style={{
                     position: 'absolute',
                     top: 6, right: 4,
-                    background: '#ef4444', // Red for better visibility
+                    background: '#ffffff', // Clean white as requested
                     width: 7, height: 7,
                     borderRadius: '50%',
                     display: 'block',
