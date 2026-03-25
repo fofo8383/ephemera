@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import User from '@/models/User';
 import Notification from '@/models/Notification';
 import { getSession } from '@/lib/auth';
 
@@ -25,9 +26,10 @@ export async function POST(request, { params }) {
     await post.save();
 
     const newComment = post.comments[post.comments.length - 1];
+    const isOwnPost  = post.userId.toString() === session.id;
 
-    // Notify post owner (skip if commenting on your own post)
-    if (post.userId.toString() !== session.id) {
+    // ── Notify post owner (skip if commenting on own post) ────
+    if (!isOwnPost) {
       Notification.create({
         toUserId:    post.userId,
         fromUserId:  session.id,
@@ -37,6 +39,44 @@ export async function POST(request, { params }) {
         postImageUrl:post.imageUrl,
         commentText: newComment.text,
       }).catch((e) => console.error('[comment notification]', e));
+    }
+
+    // ── Handle @mentions ──────────────────────────────────────
+    const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+    const rawMentions  = [...newComment.text.matchAll(mentionRegex)].map((m) => m[1]);
+    const uniqueMentions = [...new Set(rawMentions)];
+
+    if (uniqueMentions.length > 0) {
+      // Get commenter's following list for validation
+      const commenter = await User.findById(session.id).select('following').lean();
+      const followingIds = new Set(commenter.following.map((id) => id.toString()));
+
+      const mentionedUsers = await User.find({
+        username: { $in: uniqueMentions },
+        _id: { $ne: session.id }, // never notify yourself
+      }).select('_id username').lean();
+
+      for (const u of mentionedUsers) {
+        const uid = u._id.toString();
+        const isPostOwner = uid === post.userId.toString();
+        const isFollowed  = followingIds.has(uid);
+
+        // Only allowed to mention: the post uploader, or people you follow
+        if (!isPostOwner && !isFollowed) continue;
+
+        // Post owner already gets a comment notification — skip duplicate
+        if (isPostOwner && !isOwnPost) continue;
+
+        Notification.create({
+          toUserId:    u._id,
+          fromUserId:  session.id,
+          fromUsername:session.username,
+          type:        'mention',
+          postId:      post._id,
+          postImageUrl:post.imageUrl,
+          commentText: newComment.text,
+        }).catch((e) => console.error('[mention notification]', e));
+      }
     }
 
     return NextResponse.json({ comment: newComment }, { status: 201 });

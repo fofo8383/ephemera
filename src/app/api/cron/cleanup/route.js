@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import Notification from '@/models/Notification';
 import { deleteImage } from '@/lib/cloudinary';
 
 export async function GET(request) {
@@ -22,6 +23,7 @@ export async function GET(request) {
   for (const post of expired) {
     try {
       if (post.imagePublicId) await deleteImage(post.imagePublicId);
+      await Notification.deleteMany({ postId: post._id, type: { $in: ['comment', 'mention'] } });
       await Post.deleteOne({ _id: post._id });
       deleted++;
     } catch (err) {

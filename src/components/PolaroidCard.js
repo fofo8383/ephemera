@@ -2,6 +2,23 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+function CommentText({ text }) {
+  const parts = text.split(/(@[a-zA-Z0-9_]+)/g);
+  return (
+    <span>
+      {parts.map((part, i) =>
+        part.startsWith('@') ? (
+          <Link key={i} href={`/profile/${part.slice(1)}`} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+            {part}
+          </Link>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+}
+
 function formatCountdown(expiresAt) {
   const diff = expiresAt - Date.now();
   if (diff <= 0) return 'Expired';
@@ -94,8 +111,8 @@ export default function PolaroidCard({ post, onDelete, currentUser }) {
       <div className="comments-section">
         {comments.map((c, i) => (
           <div key={c._id || i} className="comment-item">
-            <b>@{c.username}</b>
-            <span>{c.text}</span>
+            <Link href={`/profile/${c.username}`} style={{ color: '#111', fontWeight: 700, flexShrink: 0 }}>@{c.username}</Link>
+            <CommentText text={c.text} />
           </div>
         ))}
         {currentUser && (

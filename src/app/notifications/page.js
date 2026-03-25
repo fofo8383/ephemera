@@ -21,6 +21,7 @@ function notifText(n) {
     case 'follow_accepted': return 'accepted your follow request';
     case 'follow':          return 'started following you';
     case 'comment':         return `commented: "${n.commentText}"`;
+    case 'mention':         return `mentioned you: "${n.commentText}"`;
     default:                return '';
   }
 }

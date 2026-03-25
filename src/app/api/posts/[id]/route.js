@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
+import Notification from '@/models/Notification';
 import { getSession } from '@/lib/auth';
 import { deleteImage } from '@/lib/cloudinary';
 
@@ -19,6 +20,9 @@ export async function DELETE(request, { params }) {
 
     if (post.imagePublicId) await deleteImage(post.imagePublicId);
     await post.deleteOne();
+
+    // Remove all comment and mention notifications tied to this post
+    await Notification.deleteMany({ postId: id, type: { $in: ['comment', 'mention'] } });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

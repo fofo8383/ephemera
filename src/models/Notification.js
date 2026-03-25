@@ -4,7 +4,7 @@ const NotificationSchema = new mongoose.Schema({
   toUserId:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   fromUserId:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   fromUsername:{ type: String, required: true },
-  type:        { type: String, enum: ['follow', 'comment', 'follow_request', 'follow_accepted'], required: true },
+  type:        { type: String, enum: ['follow', 'comment', 'mention', 'follow_request', 'follow_accepted'], required: true },
   postId:      { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
   postImageUrl:{ type: String },
   commentText: { type: String },
