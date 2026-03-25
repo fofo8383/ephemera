@@ -3,10 +3,15 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import { signToken, setTokenCookie } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rateLimit';
 import crypto from 'crypto';
 
 export async function POST(request) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+    const allowed = await checkRateLimit(ip, 'signup', 5);
+    if (!allowed) return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
+
     await dbConnect();
     const { username, email, password } = await request.json();
 
@@ -53,7 +58,7 @@ export async function POST(request) {
     });
     return NextResponse.json({ 
       error: 'Server error.', 
-      errorName: err.name, // Helpeful for debugging production
+      errorName: err.name, // Helpful for debugging production
       details: process.env.NODE_ENV === 'development' ? err.message : undefined 
     }, { status: 500 });
   }

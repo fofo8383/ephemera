@@ -4,9 +4,10 @@ import Post from '@/models/Post';
 import { deleteImage } from '@/lib/cloudinary';
 
 export async function GET(request) {
-  // Vercel cron jobs send Authorization: Bearer <CRON_SECRET>
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return NextResponse.json({ error: 'Cron not configured.' }, { status: 500 });
   const auth = request.headers.get('authorization');
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorised.' }, { status: 401 });
   }
 

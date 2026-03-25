@@ -14,6 +14,11 @@ export async function POST(request) {
     const file = formData.get('avatar');
     if (!file) return NextResponse.json({ error: 'No file provided.' }, { status: 400 });
 
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json({ error: 'Only JPEG, PNG, WebP and HEIC images are allowed.' }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const raw = Buffer.from(bytes);
 

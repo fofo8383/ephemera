@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           <section>
             <div style={headingStyle}>deleting your data</div>
             <p>you can delete your account from the settings page. this permanently removes your profile, follower relationships, and any remaining posts. it cannot be undone.</p>
-            <p style={{ marginTop: 12 }}>if you want a copy of your data or want to request deletion via email, contact us at <a href="mailto:rhjtalyor@gmail.com" style={{ color: 'var(--text-primary)' }}>rhjtaylor@gmail.com</a>.</p>
+            <p style={{ marginTop: 12 }}>if you want a copy of your data or want to request deletion via email, contact us at <a href="mailto:rhjtaylor@gmail.com" style={{ color: 'var(--text-primary)' }}>rhjtaylor@gmail.com</a>.</p>
           </section>
 
           <section>

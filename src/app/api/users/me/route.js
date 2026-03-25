@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
-import { getSession } from '@/lib/auth';
+import { getSession, signToken, setTokenCookie } from '@/lib/auth';
 import crypto from 'crypto';
 
 export async function GET() {
@@ -51,7 +51,15 @@ export async function PATCH(request) {
     const updated = await User.findByIdAndUpdate(session.id, updates, { new: true })
       .select('-passwordHash -passwordResetToken -passwordResetExpiry');
 
-    return NextResponse.json({ user: updated });
+    const res = NextResponse.json({ user: updated });
+
+    // Reissue JWT if username changed so session stays in sync
+    if (updates.username) {
+      const token = signToken({ id: session.id, username: updates.username });
+      setTokenCookie(res, token);
+    }
+
+    return res;
   } catch (err) {
     console.error('[me PATCH]', err);
     return NextResponse.json({ error: 'Server error.' }, { status: 500 });
