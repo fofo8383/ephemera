@@ -16,6 +16,13 @@ export default function ProfilePage() {
   const [followLoading, setFollowLoading] = useState(false);
 
   const [connectionsModal, setConnectionsModal] = useState(null); // 'followers' | 'following' | null
+
+  useEffect(() => {
+    if (!connectionsModal) return;
+    function onKey(e) { if (e.key === 'Escape') setConnectionsModal(null); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [connectionsModal]);
   const [connectionsList, setConnectionsList] = useState([]);
   const [connectionsLoading, setConnectionsLoading] = useState(false);
   const [removingFollower, setRemovingFollower] = useState(null);
@@ -181,7 +188,7 @@ export default function ProfilePage() {
                 {connectionsList.map((u) => (
                   <div key={u._id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{
-                      width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                      width: 40, height: 40, borderRadius: 'var(--radius)', flexShrink: 0,
                       background: 'var(--surface-2)', border: '1px solid var(--border)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontFamily: 'var(--mono)', fontSize: 14, color: 'var(--text-muted)',

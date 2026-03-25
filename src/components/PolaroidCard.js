@@ -60,7 +60,7 @@ export default function PolaroidCard({ post, onDelete, currentUser }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span className={`countdown-badge${urgent ? ' urgent' : ''}`}>
-              ⏳ {ticker}
+              {ticker}
             </span>
             {post.isOwner && (
               confirmDelete ? (

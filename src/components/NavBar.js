@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState } from 'react';
 
 export default function NavBar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const pathname = usePathname();
   const [unread, setUnread] = useState(0);
 
@@ -56,10 +56,10 @@ export default function NavBar() {
                   }} />
                 )}
               </Link>
-              <Link href={`/profile/${user.username?.toLowerCase()}`} className="btn btn-ghost btn-sm">
+              <Link href={`/profile/${user.username?.toLowerCase()}`} className="btn btn-ghost btn-sm navbar-username">
                 @{user.username}
               </Link>
-              <Link href="/settings" className="btn btn-ghost btn-sm">settings</Link>
+              <Link href="/settings" className="btn btn-ghost btn-sm navbar-settings">settings</Link>
             </>
           ) : (
             <>
