@@ -3,11 +3,16 @@ import crypto from 'crypto';
 import { Resend } from 'resend';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+    const allowed = await checkRateLimit(ip, 'forgot-password', 3);
+    if (!allowed) return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
+
     await dbConnect();
     const { email } = await request.json();
     if (!email) return NextResponse.json({ error: 'Email required.' }, { status: 400 });

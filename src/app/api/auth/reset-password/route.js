@@ -2,9 +2,14 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown';
+    const allowed = await checkRateLimit(ip, 'reset-password', 5);
+    if (!allowed) return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
+
     await dbConnect();
     const { token, password } = await request.json();
     if (!token || !password) {

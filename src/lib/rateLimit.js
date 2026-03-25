@@ -2,9 +2,8 @@ import dbConnect from './mongodb';
 import RateLimit from '@/models/RateLimit';
 
 export async function checkRateLimit(ip, action = 'auth', maxLimit = 5) {
-  // If IP can't be resolved, let it pass to not block legitimate users blindly, 
-  // though in production Vercel always provides x-forwarded-for.
-  if (!ip || ip === 'unknown') return true;
+  // Fail-closed: if IP can't be resolved, block the request.
+  if (!ip || ip === 'unknown') return false;
 
   await dbConnect();
   

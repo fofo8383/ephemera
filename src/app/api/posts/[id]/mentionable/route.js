@@ -10,7 +10,9 @@ export async function GET(request, { params }) {
     if (!session) return NextResponse.json({ error: 'Unauthorised.' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
-    const q = searchParams.get('q')?.toLowerCase() ?? '';
+    const raw = searchParams.get('q')?.slice(0, 20).toLowerCase() ?? '';
+    // Escape regex special characters to prevent ReDoS
+    const q = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     await dbConnect();
     const { id } = await params;
