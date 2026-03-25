@@ -18,7 +18,6 @@ export default function DotBackground() {
     const MAX_SPEED  = 0.3;
     const REPEL_DIST = 100;
     const NEAR_DIST  = 10;
-    const GRAVITY    = 0.004; // pull toward screen centre
 
     const mouse = { x: -9999, y: -9999 };
     const onMouseMove = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; };
@@ -68,15 +67,6 @@ export default function DotBackground() {
         if (spd > MAX_SPEED) {
           d.vx = (d.vx / spd) * MAX_SPEED;
           d.vy = (d.vy / spd) * MAX_SPEED;
-        }
-
-        // Gentle pull toward screen centre
-        const cdx = W / 2 - d.x;
-        const cdy = H / 2 - d.y;
-        const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
-        if (cdist > 0) {
-          d.vx += (cdx / cdist) * GRAVITY;
-          d.vy += (cdy / cdist) * GRAVITY;
         }
 
         d.x += d.vx;
