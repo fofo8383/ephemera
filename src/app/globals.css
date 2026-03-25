@@ -76,7 +76,6 @@ input, textarea { font-family: inherit; }
 
 /* ─── Masthead ───────────────────────────────────────────────── */
 .masthead {
-  border-bottom: 1px solid var(--border);
   padding: 28px 0 20px;
   margin-bottom: 32px;
   display: flex;
@@ -595,10 +594,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   gap: 12px;
 }
 .section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
+  content: none;
 }
 
 /* ─── Page title ────────────────────────────────────────────── */
