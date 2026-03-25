@@ -13,6 +13,8 @@ export default function DotBackground() {
     let animationFrameId;
     let time = 0;
 
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const mouse = { x: -9999, y: -9999 };
 
     const onMouseMove = (e) => {

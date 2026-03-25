@@ -1,9 +1,9 @@
-import { Inter } from 'next/font/google';
+import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import NavBar from '@/components/NavBar';
 
-const inter = Inter({ subsets: ['latin'] });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'] });
 
 export const metadata = {
   title: 'ephemera. — one photo a day',
@@ -13,7 +13,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={spaceGrotesk.className}>
         <AuthProvider>
           <NavBar />
           {children}
