@@ -47,9 +47,13 @@ export async function POST(request, { params }) {
     const uniqueMentions = [...new Set(rawMentions)];
 
     if (uniqueMentions.length > 0) {
-      // Get commenter's following list for validation
-      const commenter = await User.findById(session.id).select('following').lean();
-      const followingIds = new Set(commenter.following.map((id) => id.toString()));
+      // Fetch both the commenter's and the uploader's following lists
+      const [commenter, uploader] = await Promise.all([
+        User.findById(session.id).select('following').lean(),
+        User.findById(post.userId).select('following').lean(),
+      ]);
+      const commenterFollowing = new Set(commenter.following.map((id) => id.toString()));
+      const uploaderFollowing  = new Set(uploader.following.map((id) => id.toString()));
 
       const mentionedUsers = await User.find({
         username: { $in: uniqueMentions },
@@ -59,10 +63,11 @@ export async function POST(request, { params }) {
       for (const u of mentionedUsers) {
         const uid = u._id.toString();
         const isPostOwner = uid === post.userId.toString();
-        const isFollowed  = followingIds.has(uid);
 
-        // Only allowed to mention: the post uploader, or people you follow
-        if (!isPostOwner && !isFollowed) continue;
+        // Valid mention: the post uploader, OR someone both the commenter
+        // AND the uploader follow (they're in both networks)
+        const inBothNetworks = commenterFollowing.has(uid) && uploaderFollowing.has(uid);
+        if (!isPostOwner && !inBothNetworks) continue;
 
         // Post owner already gets a comment notification — skip duplicate
         if (isPostOwner && !isOwnPost) continue;
