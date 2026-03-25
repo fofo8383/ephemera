@@ -8,7 +8,7 @@ function CommentText({ text }) {
     <span>
       {parts.map((part, i) =>
         part.startsWith('@') ? (
-          <Link key={i} href={`/profile/${part.slice(1)}`} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
+          <Link key={i} href={`/profile/${part.slice(1)}`} style={{ color: '#111', fontWeight: 700 }}>
             {part}
           </Link>
         ) : (
