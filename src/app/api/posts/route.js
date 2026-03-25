@@ -3,6 +3,7 @@ import dbConnect from '@/lib/mongodb';
 import Post from '@/models/Post';
 import { getSession } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
+import sharp from 'sharp';
 
 export async function POST(request) {
   try {
@@ -28,8 +29,14 @@ export async function POST(request) {
     if (!file) return NextResponse.json({ error: 'Image is required.' }, { status: 400 });
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const { url, publicId } = await uploadImage(buffer);
+    const raw = Buffer.from(bytes);
+
+    const processed = await sharp(raw)
+      .resize({ width: 1200, withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+
+    const { url, publicId } = await uploadImage(processed);
 
     const post = await Post.create({
       userId: session.id,
