@@ -24,7 +24,7 @@ export async function POST(request) {
     const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`;
 
     await resend.emails.send({
-      from: 'ephemera. <noreply@ephemera-app.com>',
+      from: 'ephemera. <onboarding@resend.dev>',
       to: user.email,
       subject: 'Reset your ephemera. password',
       html: `
