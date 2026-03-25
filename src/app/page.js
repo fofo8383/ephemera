@@ -21,6 +21,25 @@ export default function LandingPage() {
           <Link href="/login" className="btn btn-outline">log in</Link>
         </div>
       </div>
+
+      <footer style={{
+        position: 'absolute',
+        bottom: 24,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 24,
+        fontFamily: 'var(--mono)',
+        fontSize: 10,
+        color: 'var(--text-muted)',
+        letterSpacing: '1.5px',
+        textTransform: 'lowercase',
+        zIndex: 10,
+      }}>
+        <Link href="/privacy" style={{ color: 'var(--text-muted)' }}>privacy</Link>
+        <Link href="/terms" style={{ color: 'var(--text-muted)' }}>terms</Link>
+      </footer>
     </main>
   );
 }
