@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
@@ -21,19 +23,14 @@ export async function POST(request) {
 
     const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`;
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-    });
-
-    await transporter.sendMail({
-      from: `ephemera. <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: 'ephemera. <noreply@ephemera-app.com>',
       to: user.email,
       subject: 'Reset your ephemera. password',
       html: `
         <p>Hi @${user.username},</p>
         <p>Click the link below to reset your password. It expires in 1 hour.</p>
-        <a href="${resetUrl}">${resetUrl}</a>
+        <p><a href="${resetUrl}">${resetUrl}</a></p>
         <p>If you didn't request this, ignore this email.</p>
       `,
     });

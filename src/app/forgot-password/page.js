@@ -6,17 +6,23 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    await fetch('/api/auth/forgot-password', {
+    setError('');
+    const res = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
     setLoading(false);
-    setSent(true);
+    if (res.ok) {
+      setSent(true);
+    } else {
+      setError('Something went wrong. Please try again.');
+    }
   }
 
   return (
@@ -42,6 +48,7 @@ export default function ForgotPasswordPage() {
                 required autoFocus
               />
             </div>
+            {error && <div className="alert alert-error" style={{ marginBottom: 12 }}>{error}</div>}
             <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
               {loading ? <span className="spinner" /> : 'Send reset link'}
             </button>
