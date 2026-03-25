@@ -11,7 +11,6 @@ export default function DotBackground() {
 
     const ctx = canvas.getContext('2d');
     let animationFrameId;
-    let time = 0;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -23,12 +22,10 @@ export default function DotBackground() {
     };
     window.addEventListener('mousemove', onMouseMove);
 
-    const SPACING = 36;
+    const SPACING = 22;
     const DOT_BASE = 1.2;
     const DOT_MAX = 3.5;
-    const INFLUENCE = 140;
-    const FLOAT_AMP = 6;
-    const FLOAT_SPEED = 0.00045;
+    const INFLUENCE = 120;
 
     let cols, rows, dots;
 
@@ -41,9 +38,7 @@ export default function DotBackground() {
       dots = [];
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          // phase offset so each dot floats independently
-          const phase = (r * 397 + c * 193) % (Math.PI * 2);
-          dots.push({ bx: c * SPACING, by: r * SPACING, phase });
+          dots.push({ x: c * SPACING, y: r * SPACING });
         }
       }
     };
@@ -52,16 +47,11 @@ export default function DotBackground() {
     buildGrid();
 
     const draw = () => {
-      time += 1;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       for (const dot of dots) {
-        // slow float
-        const floatY = Math.sin(time * FLOAT_SPEED * 1000 + dot.phase) * FLOAT_AMP;
-        const floatX = Math.cos(time * FLOAT_SPEED * 700 + dot.phase) * FLOAT_AMP * 0.5;
-
-        const x = dot.bx + floatX;
-        const y = dot.by + floatY;
+        const x = dot.x;
+        const y = dot.y;
 
         // distance from cursor
         const dx = mouse.x - x;
