@@ -17,7 +17,7 @@ const PostSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 86400, // TTL: MongoDB auto-deletes after 24 hours
+    expires: 90000, // TTL: safety net at 25h — cron handles deletion at 24h
   },
 });
 
