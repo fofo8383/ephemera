@@ -546,7 +546,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 .landing-eyebrow {
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 3px;
 }
