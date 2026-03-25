@@ -12,90 +12,76 @@ export default function DotBackground() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let raf;
-    const isMobile = window.matchMedia('(pointer: coarse)').matches;
+
+    const DOT_COUNT  = 150;
+    const RADIUS     = 1.5;
+    const COLOR      = 'rgba(255, 248, 235, 0.35)';
+    const MAX_SPEED  = 0.3;
+    const REPEL_DIST = 100;
 
     const mouse = { x: -9999, y: -9999 };
     const onMouseMove = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; };
-    if (!isMobile) window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousemove', onMouseMove);
 
-    // ── Constants ──────────────────────────────────────────────
-    const SPACING   = 28;     // grid cell size — same density as before
-    const RADIUS    = 1.3;    // dot draw radius
-    const OPACITY   = 0.28;   // base opacity
-    const REPEL_R   = 110;    // cursor influence radius
-    const REPEL_F   = 0.18;   // repel force strength
-    const DRIFT_S   = 0.012;  // max drift speed
-    const RETURN_F  = 0.022;  // spring return force
-    const DAMPING   = 0.82;   // velocity damping
-
+    let W = window.innerWidth;
+    let H = window.innerHeight;
     let dots = [];
 
-    const buildDots = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      dots = [];
-
-      const cols = Math.ceil(canvas.width  / SPACING) + 2;
-      const rows = Math.ceil(canvas.height / SPACING) + 2;
-
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          // Slightly randomise rest position within cell for organic feel
-          const ox = (Math.random() - 0.5) * SPACING * 0.6;
-          const oy = (Math.random() - 0.5) * SPACING * 0.6;
-          const rx = c * SPACING + ox;
-          const ry = r * SPACING + oy;
-          dots.push({
-            rx, ry,       // rest position
-            x: rx, y: ry, // current position
-            vx: (Math.random() - 0.5) * DRIFT_S,
-            vy: (Math.random() - 0.5) * DRIFT_S,
-            // stagger drift phase so dots don't all move in sync
-            phase: Math.random() * Math.PI * 2,
-            speed: DRIFT_S * (0.4 + Math.random() * 0.6),
-          });
-        }
-      }
+    const initDots = () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width  = W;
+      canvas.height = H;
+      dots = Array.from({ length: DOT_COUNT }, () => ({
+        x:  Math.random() * W,
+        y:  Math.random() * H,
+        vx: (Math.random() - 0.5) * MAX_SPEED * 2,
+        vy: (Math.random() - 0.5) * MAX_SPEED * 2,
+      }));
     };
 
-    const onResize = () => buildDots();
+    const onResize = () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width  = W;
+      canvas.height = H;
+    };
     window.addEventListener('resize', onResize);
-    buildDots();
+    initDots();
 
-    const draw = (t) => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = COLOR;
 
       for (const d of dots) {
-        // ── Ambient drift ─────────────────────────────────────
-        // Slow sinusoidal wander around rest position
-        const driftX = Math.sin(t * 0.0003 + d.phase)        * SPACING * 0.35;
-        const driftY = Math.cos(t * 0.00023 + d.phase * 1.3) * SPACING * 0.35;
-        const tx = d.rx + driftX; // drift target
-        const ty = d.ry + driftY;
-
-        // ── Cursor repulsion (desktop only) ───────────────────
-        let fx = 0, fy = 0;
-        if (!isMobile) {
-          const dx = d.x - mouse.x;
-          const dy = d.y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < REPEL_R && dist > 0) {
-            const strength = (1 - dist / REPEL_R) * REPEL_F;
-            fx = (dx / dist) * strength;
-            fy = (dy / dist) * strength;
-          }
+        // Repel from cursor
+        const dx = d.x - mouse.x;
+        const dy = d.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < REPEL_DIST && dist > 0) {
+          const force = (REPEL_DIST - dist) / REPEL_DIST;
+          d.vx += (dx / dist) * force * 0.6;
+          d.vy += (dy / dist) * force * 0.6;
         }
 
-        // ── Spring toward drift target + repulsion ─────────────
-        d.vx = (d.vx + (tx - d.x) * RETURN_F + fx) * DAMPING;
-        d.vy = (d.vy + (ty - d.y) * RETURN_F + fy) * DAMPING;
+        // Clamp speed
+        const spd = Math.sqrt(d.vx * d.vx + d.vy * d.vy);
+        if (spd > MAX_SPEED) {
+          d.vx = (d.vx / spd) * MAX_SPEED;
+          d.vy = (d.vy / spd) * MAX_SPEED;
+        }
+
         d.x += d.vx;
         d.y += d.vy;
 
-        // ── Draw ───────────────────────────────────────────────
+        // Wrap edges
+        if (d.x < 0)  d.x += W;
+        if (d.x > W)  d.x -= W;
+        if (d.y < 0)  d.y += H;
+        if (d.y > H)  d.y -= H;
+
         ctx.beginPath();
         ctx.arc(d.x, d.y, RADIUS, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(240, 236, 220, ${OPACITY})`;
         ctx.fill();
       }
 
@@ -106,18 +92,17 @@ export default function DotBackground() {
 
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', onResize);
-      if (!isMobile) window.removeEventListener('mousemove', onMouseMove);
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      id="bg-canvas"
       style={{
-        position: 'absolute',
-        inset: 0,
+        position: 'fixed',
+        top: 0, left: 0,
         width: '100%',
         height: '100%',
         zIndex: 0,
