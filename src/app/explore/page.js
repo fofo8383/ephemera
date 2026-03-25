@@ -13,6 +13,7 @@ export default function ConnectPage() {
   const [loading, setLoading] = useState(false);
   const [actionDone, setActionDone] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showShareLinks, setShowShareLinks] = useState(false);
 
   const handleLookup = useCallback(async (e) => {
     e.preventDefault();
@@ -146,20 +147,64 @@ export default function ConnectPage() {
                 share this with friends to let them follow you
               </div>
             </div>
-            <button
-              className="btn btn-outline btn-sm"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(user.inviteCode ?? '');
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                } catch (err) {
-                  console.error('Failed to copy', err);
-                }
-              }}
-            >
-              {copied ? 'copied!' : 'copy'}
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(user.inviteCode ?? '');
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  } catch (err) {
+                    console.error('Failed to copy', err);
+                  }
+                }}
+              >
+                {copied ? 'copied!' : 'copy'}
+              </button>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={async () => {
+                  const code = user.inviteCode ?? '';
+                  const text = `join me on ephemera — one photo a day, gone after 24 hours. use my invite code: ${code}\n\nephemera-omega.vercel.app`;
+                  if (navigator.share) {
+                    try { await navigator.share({ title: 'join me on ephemera.', text }); } catch (_) {}
+                  } else {
+                    setShowShareLinks((v) => !v);
+                  }
+                }}
+              >
+                share
+              </button>
+              {showShareLinks && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                  {(() => {
+                    const code = user.inviteCode ?? '';
+                    const text = encodeURIComponent(`join me on ephemera — one photo a day, gone after 24 hours. use my invite code: ${code}\n\nephemera-omega.vercel.app`);
+                    return (
+                      <>
+                        <a
+                          href={`https://wa.me/?text=${text}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-ghost btn-sm"
+                          style={{ fontSize: 11 }}
+                        >
+                          whatsapp
+                        </a>
+                        <a
+                          href={`mailto:?subject=${encodeURIComponent('join me on ephemera.')}&body=${text}`}
+                          className="btn btn-ghost btn-sm"
+                          style={{ fontSize: 11 }}
+                        >
+                          email
+                        </a>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}
