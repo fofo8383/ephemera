@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 
 function CommentText({ text }) {
@@ -28,13 +28,28 @@ function formatCountdown(expiresAt) {
   return `${m}m left`;
 }
 
+// Detect active @mention being typed — returns { query, start } or null
+function getActiveMention(text, cursor) {
+  const before = text.slice(0, cursor);
+  const match = before.match(/@([a-zA-Z0-9_]*)$/);
+  if (!match) return null;
+  return { query: match[1], start: before.length - match[0].length };
+}
+
 export default function PolaroidCard({ post, onDelete, currentUser }) {
-  const [comments, setComments] = useState(post.comments || []);
+  const [comments, setComments]       = useState(post.comments || []);
   const [commentText, setCommentText] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [ticker, setTicker] = useState(formatCountdown(post.expiresAt));
+  const [submitting, setSubmitting]   = useState(false);
+  const [ticker, setTicker]           = useState(formatCountdown(post.expiresAt));
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [deleting, setDeleting]       = useState(false);
+
+  // Mention autocomplete state
+  const [suggestions, setSuggestions] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [mentionAnchor, setMentionAnchor] = useState(null); // { query, start }
+  const inputRef  = useRef(null);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     const interval = setInterval(() => setTicker(formatCountdown(post.expiresAt)), 30000);
@@ -43,6 +58,76 @@ export default function PolaroidCard({ post, onDelete, currentUser }) {
 
   const urgent = post.expiresAt - Date.now() < 2 * 3600 * 1000;
 
+  // ── Mention detection & fetch ─────────────────────────────
+  const handleCommentChange = useCallback((e) => {
+    const val    = e.target.value;
+    const cursor = e.target.selectionStart;
+    setCommentText(val);
+
+    const mention = getActiveMention(val, cursor);
+    if (!mention) {
+      setSuggestions([]);
+      setMentionAnchor(null);
+      return;
+    }
+
+    setMentionAnchor(mention);
+    setActiveIndex(0);
+
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      const res = await fetch(`/api/posts/${post._id}/mentionable?q=${encodeURIComponent(mention.query)}`);
+      const data = await res.json();
+      setSuggestions(data.users || []);
+    }, 150);
+  }, [post._id]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = () => { setSuggestions([]); setMentionAnchor(null); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // ── Insert selected mention ───────────────────────────────
+  function insertMention(username) {
+    if (!mentionAnchor) return;
+    const before = commentText.slice(0, mentionAnchor.start);
+    const after  = commentText.slice(inputRef.current.selectionStart);
+    const newText = `${before}@${username} ${after}`;
+    setCommentText(newText);
+    setSuggestions([]);
+    setMentionAnchor(null);
+    // Restore focus and move cursor after inserted mention
+    requestAnimationFrame(() => {
+      if (!inputRef.current) return;
+      inputRef.current.focus();
+      const pos = before.length + username.length + 2; // @username + space
+      inputRef.current.setSelectionRange(pos, pos);
+    });
+  }
+
+  // ── Keyboard navigation for dropdown ─────────────────────
+  function handleKeyDown(e) {
+    if (!suggestions.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      if (suggestions[activeIndex]) {
+        e.preventDefault();
+        insertMention(suggestions[activeIndex].username);
+      }
+    } else if (e.key === 'Escape') {
+      setSuggestions([]);
+      setMentionAnchor(null);
+    }
+  }
+
+  // ── Submit ────────────────────────────────────────────────
   async function submitComment(e) {
     e.preventDefault();
     if (!commentText.trim()) return;
@@ -57,6 +142,8 @@ export default function PolaroidCard({ post, onDelete, currentUser }) {
     if (res.ok) {
       setComments((prev) => [...prev, data.comment]);
       setCommentText('');
+      setSuggestions([]);
+      setMentionAnchor(null);
     }
   }
 
@@ -76,9 +163,7 @@ export default function PolaroidCard({ post, onDelete, currentUser }) {
             <Link href={`/profile/${post.username}`}>@{post.username}</Link>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span className={`countdown-badge${urgent ? ' urgent' : ''}`}>
-              {ticker}
-            </span>
+            <span className={`countdown-badge${urgent ? ' urgent' : ''}`}>{ticker}</span>
             {post.isOwner && (
               confirmDelete ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
@@ -87,24 +172,12 @@ export default function PolaroidCard({ post, onDelete, currentUser }) {
                   <button onClick={() => setConfirmDelete(false)} className="btn btn-ghost btn-sm" style={{ padding: '2px 6px', fontSize: 10, minWidth: 24, height: 20 }} disabled={deleting}>n</button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setConfirmDelete(true)}
-                  className="btn btn-ghost btn-sm"
-                  style={{ fontSize: '12px', padding: '4px 8px', color: 'var(--text-muted)' }}
-                  aria-label="Delete post"
-                >
-                  ✕
-                </button>
+                <button onClick={() => setConfirmDelete(true)} className="btn btn-ghost btn-sm" style={{ fontSize: '12px', padding: '4px 8px', color: 'var(--text-muted)' }} aria-label="Delete post">✕</button>
               )
             )}
           </div>
         </div>
-        <img
-          src={post.imageUrl}
-          alt={post.caption || `Photo by @${post.username}`}
-          className="polaroid-img"
-          loading="lazy"
-        />
+        <img src={post.imageUrl} alt={post.caption || `Photo by @${post.username}`} className="polaroid-img" loading="lazy" />
         {post.caption && <div className="polaroid-caption">{post.caption}</div>}
       </div>
 
@@ -115,20 +188,63 @@ export default function PolaroidCard({ post, onDelete, currentUser }) {
             <CommentText text={c.text} />
           </div>
         ))}
+
         {currentUser && (
-          <form onSubmit={submitComment} className="comment-form">
-            <input
-              type="text"
-              className="comment-input"
-              placeholder="Add a comment…"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              maxLength={300}
-            />
-            <button type="submit" className="btn btn-ghost btn-sm" disabled={submitting || !commentText.trim()}>
-              Post
-            </button>
-          </form>
+          <div style={{ position: 'relative' }} onMouseDown={(e) => e.stopPropagation()}>
+            {/* ── Mention suggestions dropdown ── */}
+            {suggestions.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                bottom: '100%',
+                left: 0,
+                right: 0,
+                background: 'var(--surface)',
+                border: '1px solid var(--border-light)',
+                zIndex: 50,
+                marginBottom: 4,
+              }}>
+                {suggestions.map((u, i) => (
+                  <button
+                    key={u._id || u.username}
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); insertMention(u.username); }}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '8px 12px',
+                      background: i === activeIndex ? 'var(--surface-2)' : 'transparent',
+                      border: 'none',
+                      fontFamily: 'var(--mono)',
+                      fontSize: 12,
+                      color: i === activeIndex ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      borderBottom: i < suggestions.length - 1 ? '1px solid var(--border)' : 'none',
+                    }}
+                  >
+                    @{u.username}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <form onSubmit={submitComment} className="comment-form">
+              <input
+                ref={inputRef}
+                type="text"
+                className="comment-input"
+                placeholder="add a comment…"
+                value={commentText}
+                onChange={handleCommentChange}
+                onKeyDown={handleKeyDown}
+                maxLength={300}
+                autoComplete="off"
+              />
+              <button type="submit" className="btn btn-ghost btn-sm" disabled={submitting || !commentText.trim()}>
+                post
+              </button>
+            </form>
+          </div>
         )}
       </div>
     </>
