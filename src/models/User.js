@@ -28,6 +28,7 @@ const UserSchema = new mongoose.Schema({
   googleId:     { type: String, unique: true, sparse: true },
   bio: { type: String, maxlength: 160, default: '' },
   avatarUrl: { type: String, default: '' },
+  avatarPublicId: { type: String, default: '' },
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 

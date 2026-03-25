@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
@@ -10,6 +10,9 @@ export default function SettingsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const avatarInputRef = useRef(null);
 
   // Delete account state
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -22,9 +25,29 @@ export default function SettingsPage() {
     fetch('/api/users/me')
       .then((r) => r.json())
       .then((data) => {
-        if (data.user) setForm({ username: data.user.username || '', bio: data.user.bio || '' });
+        if (data.user) {
+          setForm({ username: data.user.username || '', bio: data.user.bio || '' });
+          setAvatarUrl(data.user.avatarUrl || '');
+        }
       });
   }, [user, router]);
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarLoading(true);
+    const fd = new FormData();
+    fd.append('avatar', file);
+    const res = await fetch('/api/users/me/avatar', { method: 'POST', body: fd });
+    const data = await res.json();
+    setAvatarLoading(false);
+    if (res.ok) {
+      setAvatarUrl(data.avatarUrl);
+      setUser((prev) => ({ ...prev, avatarUrl: data.avatarUrl }));
+    } else {
+      setError(data.error || 'Avatar upload failed.');
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -69,6 +92,45 @@ export default function SettingsPage() {
   return (
     <main className="page container">
       <div className="page-title">settings</div>
+
+      {/* ── Avatar section ── */}
+      <div className="section-label">photo</div>
+      <div style={{ marginBottom: 40, display: 'flex', alignItems: 'center', gap: 20 }}>
+        <button
+          type="button"
+          onClick={() => avatarInputRef.current?.click()}
+          disabled={avatarLoading}
+          aria-label="Change profile photo"
+          style={{ background: 'none', border: 'none', padding: 0 }}
+        >
+          <div className="avatar" style={{ width: 72, height: 72, fontSize: 26, opacity: avatarLoading ? 0.5 : 1, position: 'relative' }}>
+            {avatarUrl
+              ? <img src={avatarUrl} alt="Your avatar" />
+              : <span>{user?.username?.[0]?.toUpperCase()}</span>
+            }
+          </div>
+        </button>
+        <div>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={avatarLoading}
+          >
+            {avatarLoading ? <span className="spinner" /> : 'change photo'}
+          </button>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', marginTop: 8, letterSpacing: '0.5px' }}>
+            jpg, png or webp — max 10mb
+          </div>
+        </div>
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/heic"
+          onChange={handleAvatarChange}
+          style={{ display: 'none' }}
+        />
+      </div>
 
       {/* ── Profile section ── */}
       <div className="section-label">profile</div>

@@ -11,10 +11,10 @@ cloudinary.config({
  * @param {Buffer|string} fileBuffer - image data
  * @returns {Promise<{url: string, publicId: string}>}
  */
-export async function uploadImage(fileBuffer) {
+export async function uploadImage(fileBuffer, folder = 'ephemera') {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: 'ephemera', resource_type: 'image' },
+      { folder, resource_type: 'image' },
       (error, result) => {
         if (error) return reject(error);
         resolve({ url: result.secure_url, publicId: result.public_id });
