@@ -97,9 +97,17 @@ export default function DotBackground() {
       for (const d of dots) {
         ctx.beginPath();
         ctx.arc(d.x, d.y, RADIUS, 0, Math.PI * 2);
-        ctx.fillStyle = d.near ? 'rgba(255,248,235,0.9)' : 'rgba(255,248,235,0.35)';
+        if (d.near) {
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = 'rgba(255,248,235,0.8)';
+          ctx.fillStyle = 'rgba(255,248,235,0.9)';
+        } else {
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = 'rgba(255,248,235,0.35)';
+        }
         ctx.fill();
       }
+      ctx.shadowBlur = 0;
 
       raf = requestAnimationFrame(draw);
     };
