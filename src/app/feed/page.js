@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import PolaroidCard from '@/components/PolaroidCard';
-import Link from 'next/link';
 
 export default function FeedPage() {
   const { user } = useAuth();
@@ -38,11 +37,38 @@ export default function FeedPage() {
       </div>
       <div className="section-label">feed</div>
       {posts.length === 0 ? (
-        <div className="empty-state">
-          <h2>nothing here yet</h2>
-          <p>follow people to see their daily drops,<br />or share your own moment.</p>
-          <div style={{ marginTop: 24 }}>
-            <Link href="/upload" className="btn btn-primary btn-sm">+ upload today</Link>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 20,
+          pointerEvents: 'none',
+        }}>
+          <p style={{
+            fontFamily: 'var(--mono)',
+            fontSize: 13,
+            color: 'var(--text-muted)',
+            letterSpacing: '0.5px',
+          }}>
+            you&rsquo;re in — drop your first photo
+          </p>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 4,
+            fontFamily: 'var(--mono)',
+            fontSize: 10,
+            color: 'var(--text-muted)',
+            letterSpacing: '1px',
+            textTransform: 'uppercase',
+            opacity: 0.5,
+          }}>
+            <span style={{ transform: 'rotate(-30deg)', fontSize: 14, lineHeight: 1 }}>↑</span>
+            <span>+ upload</span>
           </div>
         </div>
       ) : (
