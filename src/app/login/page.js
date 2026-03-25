@@ -1,8 +1,16 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+
+function GoogleErrorHandler({ onError }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('error') === 'google_failed') onError('Google sign-in failed. Please try again.');
+  }, [searchParams, onError]);
+  return null;
+}
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -10,13 +18,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams.get('error') === 'google_failed') {
-      setError('Google sign-in failed. Please try again.');
-    }
-  }, [searchParams]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -36,6 +37,7 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
+      <Suspense><GoogleErrorHandler onError={setError} /></Suspense>
       <div className="auth-card">
         <div className="auth-logo">ephemera.</div>
         <div className="auth-subtitle">Welcome back</div>
