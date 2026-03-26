@@ -34,7 +34,6 @@ export async function POST(request, { params }) {
     await post.save();
 
     const newComment = post.comments[post.comments.length - 1];
-    const isOwnPost  = post.userId.toString() === session.id;
 
     // ── Notify post owner (skip if commenting on own post) ────
     if (!isOwnPost) {
