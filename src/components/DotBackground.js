@@ -31,12 +31,12 @@ export default function DotBackground() {
     let H = window.innerHeight;
     let dots = [];
 
-    const makeDot = (x, y, vx, vy) => ({
+    const makeDot = (x, y, vx, vy, ageOffset = 0) => ({
       x:   x  ?? Math.random() * W,
       y:   y  ?? Math.random() * H,
       vx:  vx ?? (Math.random() - 0.5) * MAX_SPEED * 2,
       vy:  vy ?? (Math.random() - 0.5) * MAX_SPEED * 2,
-      born: Date.now(),
+      born: Date.now() - ageOffset,
       lastSplit: 0,
       near: false,
     });
@@ -46,7 +46,8 @@ export default function DotBackground() {
       H = window.innerHeight;
       canvas.width  = W;
       canvas.height = H;
-      dots = Array.from({ length: DOT_COUNT }, () => makeDot());
+      // Stagger initial birth times across the full TTL so they don't all expire together
+      dots = Array.from({ length: DOT_COUNT }, () => makeDot(null, null, null, null, Math.random() * TTL));
     };
 
     const onResize = () => {
