@@ -10,19 +10,20 @@ export default function TermsPage() {
         <div style={{ fontFamily: 'var(--mono)', marginBottom: 48 }}>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: 16 }}>ephemera.</div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.5px', marginBottom: 8 }}>terms of service</h1>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '1px' }}>last updated: march 2026</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '1px' }}>last updated: 26 march 2026</div>
         </div>
 
         <div style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.9, display: 'flex', flexDirection: 'column', gap: 40 }}>
 
           <section>
             <div style={headingStyle}>the basics</div>
-            <p>by using ephemera you agree to these terms. if you don&rsquo;t agree, don&rsquo;t use it. that&rsquo;s it.</p>
+            <p>by using ephemera — including signing in with google — you agree to these terms. if you don&rsquo;t agree, don&rsquo;t use it. that&rsquo;s it.</p>
           </section>
 
           <section>
             <div style={headingStyle}>one photo a day</div>
-            <p>you can post one photo every 24 hours. that&rsquo;s the whole idea. your photo will be visible to your followers for 24 hours and then permanently deleted.</p>
+            <p>you can post one photo every 24 hours. that&rsquo;s the whole idea. your photo will be visible to your followers for 24 hours and then permanently deleted — including from our image storage provider.</p>
+            <p style={{ marginTop: 12 }}>you can leave comments on posts. comments are also deleted when the post expires. you may @mention other users in comments, subject to the privacy rules of who can see the post.</p>
           </section>
 
           <section>

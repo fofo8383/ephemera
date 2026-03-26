@@ -10,15 +10,16 @@ export default function PrivacyPage() {
         <div style={{ fontFamily: 'var(--mono)', marginBottom: 48 }}>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '3px', marginBottom: 16 }}>ephemera.</div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.5px', marginBottom: 8 }}>privacy policy</h1>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '1px' }}>last updated: march 2026</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '1px' }}>last updated: 26 march 2026</div>
         </div>
 
         <div style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.9, display: 'flex', flexDirection: 'column', gap: 40 }}>
 
           <section>
             <div style={headingStyle}>what we collect</div>
-            <p>when you create an account we collect your email address and the username you choose. when you upload a photo we store the image and any caption you add. we also store a record of who follows you and who you follow.</p>
-            <p style={{ marginTop: 12 }}>we do not collect your real name, phone number, location, or any payment information.</p>
+            <p>when you create an account we collect your email address and the username you choose. if you sign in with google we receive your google email address — nothing else. when you upload a photo we store the image and any caption you add. we also store a record of who follows you and who you follow.</p>
+            <p style={{ marginTop: 12 }}>you may optionally upload a profile photo. this is stored on cloudinary and remains until you replace or delete it.</p>
+            <p style={{ marginTop: 12 }}>comments you write and notifications you receive are stored and automatically deleted when the post they relate to expires. we do not collect your real name, phone number, location, or any payment information.</p>
           </section>
 
           <section>
@@ -36,7 +37,7 @@ export default function PrivacyPage() {
           <section>
             <div style={headingStyle}>third parties</div>
             <p>we do not sell, share, or rent your data to anyone. ever.</p>
-            <p style={{ marginTop: 12 }}>the only third-party services we use are cloudinary (image storage), mongodb atlas (database), and vercel (hosting). each has their own privacy policy governing how they handle infrastructure-level data.</p>
+            <p style={{ marginTop: 12 }}>the only third-party services we use are cloudinary (image storage), mongodb atlas (database), vercel (hosting), resend (transactional email for password resets), and google (optional sign-in via oauth). each has their own privacy policy governing how they handle infrastructure-level data.</p>
           </section>
 
           <section>
