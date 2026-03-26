@@ -13,10 +13,10 @@ export default function DotBackground() {
     const ctx = canvas.getContext('2d');
     let raf;
 
-    const DOT_COUNT      = 150;  // target population
-    const DOT_MAX        = 280;  // hard cap (splits are capped here)
+    const DOT_COUNT      = 165;  // target population
+    const DOT_MAX        = 308;  // hard cap (splits are capped here)
     const RADIUS         = 1.5;
-    const MAX_SPEED      = 0.3;
+    const MAX_SPEED      = 0.33;
     const REPEL_DIST     = 100;
     const NEAR_DIST      = 10;
     const TTL            = 10000; // ms — dot lifespan
