@@ -13,11 +13,15 @@ export default function DotBackground() {
     const ctx = canvas.getContext('2d');
     let raf;
 
-    const DOT_COUNT  = 150;
-    const RADIUS     = 1.5;
-    const MAX_SPEED  = 0.3;
-    const REPEL_DIST = 100;
-    const NEAR_DIST  = 10;
+    const DOT_COUNT      = 150;  // target population
+    const DOT_MAX        = 280;  // hard cap (splits are capped here)
+    const RADIUS         = 1.5;
+    const MAX_SPEED      = 0.3;
+    const REPEL_DIST     = 100;
+    const NEAR_DIST      = 10;
+    const TTL            = 10000; // ms — dot lifespan
+    const FADE_OUT       = 2000;  // ms — fade window at end of life
+    const SPLIT_COOLDOWN = 4000;  // ms — min gap between a dot splitting again
 
     const mouse = { x: -9999, y: -9999 };
     const onMouseMove = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; };
@@ -27,17 +31,22 @@ export default function DotBackground() {
     let H = window.innerHeight;
     let dots = [];
 
+    const makeDot = (x, y, vx, vy) => ({
+      x:   x  ?? Math.random() * W,
+      y:   y  ?? Math.random() * H,
+      vx:  vx ?? (Math.random() - 0.5) * MAX_SPEED * 2,
+      vy:  vy ?? (Math.random() - 0.5) * MAX_SPEED * 2,
+      born: Date.now(),
+      lastSplit: 0,
+      near: false,
+    });
+
     const initDots = () => {
       W = window.innerWidth;
       H = window.innerHeight;
       canvas.width  = W;
       canvas.height = H;
-      dots = Array.from({ length: DOT_COUNT }, () => ({
-        x:  Math.random() * W,
-        y:  Math.random() * H,
-        vx: (Math.random() - 0.5) * MAX_SPEED * 2,
-        vy: (Math.random() - 0.5) * MAX_SPEED * 2,
-      }));
+      dots = Array.from({ length: DOT_COUNT }, () => makeDot());
     };
 
     const onResize = () => {
@@ -51,6 +60,13 @@ export default function DotBackground() {
 
     const draw = () => {
       ctx.clearRect(0, 0, W, H);
+      const now = Date.now();
+
+      // ── Expire dead dots ──────────────────────────────────
+      dots = dots.filter((d) => now - d.born < TTL);
+
+      // ── Replenish to target count ─────────────────────────
+      while (dots.length < DOT_COUNT) dots.push(makeDot());
 
       // ── Update & move dots ────────────────────────────────
       for (const d of dots) {
@@ -80,30 +96,62 @@ export default function DotBackground() {
         d.near = false;
       }
 
-      // ── Mark dots that are near each other ────────────────
+      // ── Proximity check + split ───────────────────────────
+      const spawned = [];
       for (let i = 0; i < dots.length; i++) {
         for (let j = i + 1; j < dots.length; j++) {
           const a = dots[i], b = dots[j];
           const dx = b.x - a.x;
           const dy = b.y - a.y;
-          if (dx * dx + dy * dy < NEAR_DIST * NEAR_DIST) {
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < NEAR_DIST && dist > 0) {
             a.near = true;
             b.near = true;
+
+            // Split: spawn a child perpendicular to the collision axis
+            if (
+              dots.length + spawned.length < DOT_MAX &&
+              now - a.lastSplit > SPLIT_COOLDOWN &&
+              now - b.lastSplit > SPLIT_COOLDOWN
+            ) {
+              // Perpendicular to a→b, random sign
+              const perp = Math.random() < 0.5 ? 1 : -1;
+              const nx = (-dy / dist) * perp;
+              const ny = (dx  / dist) * perp;
+              const speed = MAX_SPEED * (0.4 + Math.random() * 0.6);
+              spawned.push(makeDot(
+                (a.x + b.x) / 2,
+                (a.y + b.y) / 2,
+                nx * speed,
+                ny * speed,
+              ));
+              a.lastSplit = now;
+              b.lastSplit = now;
+            }
           }
         }
       }
+      dots.push(...spawned);
 
       // ── Draw dots ─────────────────────────────────────────
       for (const d of dots) {
+        const age = now - d.born;
+        // Fade in over 500ms, fade out over last FADE_OUT ms
+        const fadeIn  = Math.min(1, age / 500);
+        const fadeOut = age > TTL - FADE_OUT ? (TTL - age) / FADE_OUT : 1;
+        const lifeAlpha = fadeIn * fadeOut;
+
         ctx.beginPath();
         ctx.arc(d.x, d.y, RADIUS, 0, Math.PI * 2);
+
         if (d.near) {
-          ctx.shadowBlur = 8;
-          ctx.shadowColor = 'rgba(255,248,235,0.8)';
-          ctx.fillStyle = 'rgba(255,248,235,0.9)';
+          ctx.shadowBlur   = 8;
+          ctx.shadowColor  = `rgba(255,248,235,${(0.8 * lifeAlpha).toFixed(3)})`;
+          ctx.fillStyle    = `rgba(255,248,235,${(0.9 * lifeAlpha).toFixed(3)})`;
         } else {
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = 'rgba(255,248,235,0.35)';
+          ctx.shadowBlur   = 0;
+          ctx.fillStyle    = `rgba(255,248,235,${(0.35 * lifeAlpha).toFixed(3)})`;
         }
         ctx.fill();
       }
