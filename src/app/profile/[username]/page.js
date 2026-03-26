@@ -28,6 +28,8 @@ export default function ProfilePage() {
   const [removingFollower, setRemovingFollower] = useState(null);
 
   useEffect(() => {
+    if (user === undefined) return; // wait for auth to resolve
+    if (user === null) { router.replace(`/login?next=/profile/${username}`); return; }
     setLoading(true);
     fetch(`/api/users/${username}`)
       .then((r) => r.json())
@@ -39,7 +41,7 @@ export default function ProfilePage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [username, router]);
+  }, [username, router, user]);
 
   async function toggleFollow() {
     if (!user) { router.push('/login'); return; }
@@ -101,49 +103,60 @@ export default function ProfilePage() {
           </div>
           <div className="profile-meta">
             <div className="profile-username">@{profile.username}</div>
-            {profile.bio && <div className="profile-bio">{profile.bio}</div>}
-            <div className="profile-stats">
-              <div 
-                className="profile-stat" 
-                onClick={() => openConnections('followers')}
-                style={{ cursor: profile.followerCount > 0 ? 'pointer' : 'default' }}
-              >
-                <span className="profile-stat-value">{profile.followerCount}</span>
-                <span className="profile-stat-label">followers</span>
-              </div>
-              <div 
-                className="profile-stat" 
-                onClick={() => openConnections('following')}
-                style={{ cursor: profile.followingCount > 0 ? 'pointer' : 'default' }}
-              >
-                <span className="profile-stat-value">{profile.followingCount}</span>
-                <span className="profile-stat-label">following</span>
-              </div>
-              <div className="profile-stat">
-                <span className="profile-stat-value">{posts.length}</span>
-                <span className="profile-stat-label">post{posts.length !== 1 ? 's' : ''}</span>
-              </div>
-            </div>
-            {profile.isMe ? (
-              <Link href="/settings" className="btn btn-outline btn-sm">edit profile</Link>
-            ) : (
-              <button
-                onClick={toggleFollow}
-                className={`btn btn-sm ${following ? 'btn-outline' : 'btn-primary'}`}
-                disabled={followLoading}
-              >
-                {followLoading ? <span className="spinner" style={{ width: 12, height: 12 }} /> : following ? 'unfollow' : 'follow'}
-              </button>
+            {!profile.locked && (
+              <>
+                {profile.bio && <div className="profile-bio">{profile.bio}</div>}
+                <div className="profile-stats">
+                  <div
+                    className="profile-stat"
+                    onClick={() => openConnections('followers')}
+                    style={{ cursor: profile.followerCount > 0 ? 'pointer' : 'default' }}
+                  >
+                    <span className="profile-stat-value">{profile.followerCount}</span>
+                    <span className="profile-stat-label">followers</span>
+                  </div>
+                  <div
+                    className="profile-stat"
+                    onClick={() => openConnections('following')}
+                    style={{ cursor: profile.followingCount > 0 ? 'pointer' : 'default' }}
+                  >
+                    <span className="profile-stat-value">{profile.followingCount}</span>
+                    <span className="profile-stat-label">following</span>
+                  </div>
+                  <div className="profile-stat">
+                    <span className="profile-stat-value">{posts.length}</span>
+                    <span className="profile-stat-label">post{posts.length !== 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+                {profile.isMe ? (
+                  <Link href="/settings" className="btn btn-outline btn-sm">edit profile</Link>
+                ) : (
+                  <button
+                    onClick={toggleFollow}
+                    className={`btn btn-sm ${following ? 'btn-outline' : 'btn-primary'}`}
+                    disabled={followLoading}
+                  >
+                    {followLoading ? <span className="spinner" style={{ width: 12, height: 12 }} /> : following ? 'unfollow' : 'follow'}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
       </div>
 
-      {!profile.isMe && !following ? (
-        <div className="empty-state" style={{ marginTop: 40 }}>
-          <p style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--text-muted)' }}>
-            follow to see their drops.
-          </p>
+      {profile.locked ? (
+        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+            this account is private.
+          </div>
+          <button
+            onClick={toggleFollow}
+            className="btn btn-primary btn-sm"
+            disabled={followLoading}
+          >
+            {followLoading ? <span className="spinner" style={{ width: 12, height: 12 }} /> : 'request to follow'}
+          </button>
         </div>
       ) : (
         <>
