@@ -8,7 +8,6 @@ const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['300', '400', 
 export const metadata = {
   title: 'ephemera. — one photo a day',
   description: 'A minimalist social network. Share one photo a day, gone after 24 hours.',
-  icons: { icon: '/favicon.svg', shortcut: '/favicon.svg' },
 };
 
 export default function RootLayout({ children }) {
