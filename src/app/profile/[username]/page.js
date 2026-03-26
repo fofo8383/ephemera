@@ -139,21 +139,30 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="section-label">drops</div>
-
-      {posts.length === 0 ? (
-        <div className="empty-state">
-          <p>no drops yet.</p>
+      {!profile.isMe && !following ? (
+        <div className="empty-state" style={{ marginTop: 40 }}>
+          <p style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--text-muted)' }}>
+            follow to see their drops.
+          </p>
         </div>
       ) : (
-        posts.map((post) => (
-          <PolaroidCard
-            key={post._id}
-            post={{ ...post, isOwner: profile.isMe }}
-            onDelete={handleDelete}
-            currentUser={user}
-          />
-        ))
+        <>
+          <div className="section-label">drops</div>
+          {posts.length === 0 ? (
+            <div className="empty-state">
+              <p>no drops yet.</p>
+            </div>
+          ) : (
+            posts.map((post) => (
+              <PolaroidCard
+                key={post._id}
+                post={{ ...post, isOwner: profile.isMe }}
+                onDelete={handleDelete}
+                currentUser={user}
+              />
+            ))
+          )}
+        </>
       )}
 
       {/* ── Connections Modal ── */}
