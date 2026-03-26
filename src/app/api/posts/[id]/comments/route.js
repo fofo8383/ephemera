@@ -15,6 +15,14 @@ export async function POST(request, { params }) {
     const post = await Post.findById(id);
     if (!post) return NextResponse.json({ error: 'Post not found.' }, { status: 404 });
 
+    // Only the post owner or their followers can comment
+    const isOwnPost = post.userId.toString() === session.id;
+    if (!isOwnPost) {
+      const postOwner = await User.findById(post.userId).select('followers').lean();
+      const isFollower = postOwner?.followers.some((f) => f.toString() === session.id);
+      if (!isFollower) return NextResponse.json({ error: 'Forbidden.' }, { status: 403 });
+    }
+
     const { text } = await request.json();
     if (!text || !text.trim()) return NextResponse.json({ error: 'Comment text required.' }, { status: 400 });
 

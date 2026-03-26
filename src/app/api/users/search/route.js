@@ -6,33 +6,31 @@ import { getSession } from '@/lib/auth';
 export async function GET(request) {
   try {
     const session = await getSession();
+    if (!session) return NextResponse.json({ error: 'Login required.' }, { status: 401 });
+
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q')?.trim();
 
-    if (!q || q.length < 2) {
-      return NextResponse.json({ users: [] });
-    }
+    if (!q || q.length < 2) return NextResponse.json({ users: [] });
 
     await dbConnect();
 
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const users = await User.find({
-      username: { $regex: `^${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, $options: 'i' },
-      ...(session ? { _id: { $ne: session.id } } : {}),
+      username: { $regex: `^${escaped}`, $options: 'i' },
+      _id: { $ne: session.id },
     })
-      .select('username bio followers')
+      .select('username following')
       .limit(20)
       .lean();
 
-    const followingIds = session
-      ? (await User.findById(session.id).select('following').lean())?.following?.map(String) ?? []
-      : [];
+    const myFollowing = (await User.findById(session.id).select('following').lean())
+      ?.following?.map(String) ?? [];
 
     return NextResponse.json({
       users: users.map((u) => ({
         username: u.username,
-        bio: u.bio,
-        followerCount: u.followers?.length ?? 0,
-        isFollowing: followingIds.includes(String(u._id)),
+        isFollowing: myFollowing.includes(String(u._id)),
       })),
     });
   } catch (err) {
