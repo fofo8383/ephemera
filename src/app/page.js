@@ -23,8 +23,8 @@ export default function LandingPage() {
       <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 640, padding: '0 32px', textAlign: 'center' }}>
         <div className="landing-eyebrow" style={{ marginBottom: 24 }}>one photo · one day · gone forever</div>
         <h1 style={{ whiteSpace: 'nowrap', marginBottom: 20 }}>ephemera.</h1>
-        <p className="landing-tagline" style={{ borderLeft: 'none', paddingLeft: 0, textAlign: 'center', margin: '0 auto 40px', maxWidth: 280 }}>
-          share moments, not data
+        <p className="landing-tagline" style={{ borderLeft: 'none', paddingLeft: 0, textAlign: 'center', margin: '0 auto 40px', maxWidth: 360 }}>
+          a private photo network. one photo a day. gone by tomorrow.
         </p>
         <div className="landing-cta" style={{ justifyContent: 'center' }}>
           <Link href="/signup" className="btn btn-primary">create account</Link>
