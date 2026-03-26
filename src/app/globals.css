@@ -11,7 +11,7 @@
 
   --text-primary: #f0f0ec;
   --text-secondary: #a8a8a2;
-  --text-muted: #707068;
+  --text-muted: #888880;
 
   --accent: #f0f0ec;       /* stark white — no warm tones */
   --accent-inv: #0a0a0a;
@@ -185,9 +185,9 @@ input, textarea { font-family: inherit; }
 
 .form-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 1.5px;
 }
@@ -536,8 +536,8 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 }
 .profile-stat-label {
   font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -584,10 +584,10 @@ textarea.form-input { resize: vertical; min-height: 80px; }
 /* ─── Section header ────────────────────────────────────────── */
 .section-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-bottom: 24px;
   display: flex;
   align-items: center;
@@ -604,7 +604,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   margin-bottom: 28px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
