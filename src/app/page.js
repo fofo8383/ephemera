@@ -1,12 +1,22 @@
-import Link from 'next/link';
-import DotBackground from '@/components/DotBackground';
+'use client';
 
-export const metadata = {
-  title: 'ephemera. — one photo a day',
-  description: 'A minimalist social network. Share one photo a day, gone after 24 hours.',
-};
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import DotBackground from '@/components/DotBackground';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LandingPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) router.replace('/feed');
+  }, [user, router]);
+
+  // Don't flash the landing page while redirecting
+  if (user) return null;
+
   return (
     <main className="landing" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <DotBackground />
